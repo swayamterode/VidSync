@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+ 
+npm exec lint-staged # or yarn exec lint-staged or pnpm exec lint-staged 👍🏻
+ 
