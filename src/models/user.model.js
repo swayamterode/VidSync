@@ -57,12 +57,12 @@ userSchema.methods.checkPassword = async function (password) {
 };
 
 // Generates an access token (JWT token)
-userSchema.methods.generateAccessToken = async function () {
+userSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     {
-      _id: this.id,
-      username: this.username,
+      _id: this._id,
       email: this.email,
+      username: this.username,
       fullName: this.fullName,
     },
     process.env.ACCESS_TOKEN_SECRET,
@@ -72,11 +72,11 @@ userSchema.methods.generateAccessToken = async function () {
   );
 };
 
-//  Generates a refresh token (JWT token)
-userSchema.methods.generateRefreshToken = async function () {
+// Generates a refresh token (JWT token)
+userSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
     {
-      _id: this.id,
+      _id: this._id,
     },
     process.env.REFRESH_TOKEN_SECRET,
     {

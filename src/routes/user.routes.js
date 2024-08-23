@@ -1,6 +1,11 @@
 import { Router } from "express";
-import { registerUser } from "../controllers/user.controller.js";
+import {
+  registerUser,
+  loginUser,
+  logoutUser,
+} from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
+import { verifyJWT } from "../middlewares/auth.middleware.js";
 const router = Router();
 
 router.route("/register").post(
@@ -16,6 +21,9 @@ router.route("/register").post(
   ]),
   registerUser,
 );
-export default router;
 
-// Fields are the options allows use to upload multiple files with different names.
+router.route("/login").post(loginUser);
+
+// secured route
+router.route("/logout").post(verifyJWT, logoutUser);
+export default router;
