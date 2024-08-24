@@ -278,4 +278,38 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     throw new ApiError(500, error?.message || "Error refreshing access token");
   }
 });
-export { registerUser, loginUser, logoutUser, refreshAccessToken };
+
+/**
+ * Changes the current password of a user.
+ *
+ * @async
+ * @function changeCurrentPassword
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Object} The response object with a success message.
+ * @throws {ApiError} If the old password is invalid.
+ */
+const changeCurrentPassword = asyncHandler(async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+  const user = await User.findById(req.body?.id);
+
+  const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
+
+  if (!isPasswordCorrect) {
+    throw new ApiError(404, "Old Password is invalid");
+  }
+
+  user.password = newPassword;
+  user.save({ validateBeforeSave: false });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Password changed successfully"));
+});
+export {
+  registerUser,
+  loginUser,
+  logoutUser,
+  refreshAccessToken,
+  changeCurrentPassword,
+};
