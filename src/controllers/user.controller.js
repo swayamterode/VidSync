@@ -388,6 +388,10 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
       },
       { new: true },
     ).select("-password");
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, user, "User Avatar updated successfully"));
   } catch (error) {
     console.error("Error while updating user details:", error);
     return res
@@ -396,6 +400,50 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   }
 });
 
+/**
+ * Updates the cover image of a user.
+ *
+ * @async
+ * @function updateUserCoverImage
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>} - A promise that resolves when the cover image is updated successfully.
+ * @throws {ApiError} - If the cover image file is missing or if there is an error while updating the user details.
+ */
+const updateUserCoverImage = asyncHandler(async (req, res) => {
+  const coverImageLocalPath = req.file?.path;
+
+  if (!coverImageLocalPath) {
+    throw new ApiError(400, "coverImage file is missing");
+  }
+
+  try {
+    const coverImage = await cloudinaryUpload(coverImageLocalPath);
+
+    if (!coverImage.secure_url) {
+      throw new ApiError(400, "Failed to get coverImage url on Cloudinary");
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user?._id,
+      {
+        $set: {
+          coverImage: coverImage.secure_url,
+        },
+      },
+      { new: true },
+    ).select("-password");
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, user, "Cover Image updated successfully"));
+  } catch (error) {
+    console.error("Error while updating user details:", error);
+    return res
+      .status(400)
+      .json(new ApiError(400, {}, "Error while updating user details"));
+  }
+});
 export {
   registerUser,
   loginUser,
@@ -405,4 +453,5 @@ export {
   getCurrentUser,
   updateAccountDetails,
   updateUserAvatar,
+  updateUserCoverImage,
 };
