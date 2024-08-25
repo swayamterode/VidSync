@@ -291,7 +291,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
  */
 const changeCurrentPassword = asyncHandler(async (req, res) => {
   const { oldPassword, newPassword } = req.body;
-  const user = await User.findById(req.body?.id);
+  const user = await User.findById(req.body?._id);
 
   const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
 
@@ -320,6 +320,43 @@ const getCurrentUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, req.user, "Fetched User detailed successfully"));
 });
 
+/**
+ * Updates the account details of a user.
+ *
+ * @async
+ * @function updateAccountDetails
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Object} The updated user data.
+ * @throws {ApiError} If fullName or email is missing.
+ */
+const updateAccountDetails = asyncHandler(async (req, res) => {
+  try {
+    const { fullName, email } = req.body;
+    if (!fullName || !email) {
+      throw new ApiError(400, "All fields are required");
+    }
+    const user = await User.findByIdAndUpdate(
+      req.user?._id,
+      {
+        $set: {
+          fullName,
+          email,
+        },
+      },
+      { new: true },
+    ).select("-password");
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, user, "Updated user data successfully"));
+  } catch (error) {
+    return res
+      .status(400)
+      .json(new ApiError(400, {}, "Error while updating user details"));
+  }
+});
+
 export {
   registerUser,
   loginUser,
@@ -327,4 +364,5 @@ export {
   refreshAccessToken,
   changeCurrentPassword,
   getCurrentUser,
+  updateAccountDetails,
 };
