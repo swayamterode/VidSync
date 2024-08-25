@@ -357,6 +357,45 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
   }
 });
 
+/**
+ * Updates the user's avatar.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>} - A promise that resolves when the user's avatar is updated.
+ * @throws {ApiError} - If the avatar file is missing or if there is an error while updating the user details.
+ */
+const updateUserAvatar = asyncHandler(async (req, res) => {
+  const avatarLocalPath = req.file?.path;
+
+  if (!avatarLocalPath) {
+    throw new ApiError(400, "Avatar file is missing");
+  }
+
+  try {
+    const avatar = await cloudinaryUpload(avatarLocalPath);
+
+    if (!avatar.secure_url) {
+      throw new ApiError(400, "Failed to get avatar url on Cloudinary");
+    }
+
+    await User.findByIdAndUpdate(
+      req.user?._id,
+      {
+        $set: {
+          avatar: avatar.secure_url,
+        },
+      },
+      { new: true },
+    ).select("-password");
+  } catch (error) {
+    console.error("Error while updating user details:", error);
+    return res
+      .status(400)
+      .json(new ApiError(400, {}, "Error while updating user details"));
+  }
+});
+
 export {
   registerUser,
   loginUser,
@@ -365,4 +404,5 @@ export {
   changeCurrentPassword,
   getCurrentUser,
   updateAccountDetails,
+  updateUserAvatar,
 };
